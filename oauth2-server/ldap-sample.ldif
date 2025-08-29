@@ -1,0 +1,108 @@
+# LDAP Sample Data for OAuth2 Server
+# This file contains sample users and groups for testing
+
+# Base DN
+dn: dc=example,dc=com
+objectClass: top
+objectClass: dcObject
+objectClass: organization
+dc: example
+o: Example Organization
+
+# Organizational Units
+dn: ou=users,dc=example,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: users
+description: User accounts
+
+dn: ou=groups,dc=example,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: groups
+description: User groups
+
+# Admin User
+dn: uid=admin,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: admin
+cn: Administrator
+sn: Admin
+givenName: Admin
+mail: admin@example.com
+userPassword: {SHA}W6ph5Mm5Pz8GgiULbPgzG37mj9g=
+
+# Regular User 1
+dn: uid=user1,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: user1
+cn: User One
+sn: One
+givenName: User
+mail: user1@example.com
+userPassword: {SHA}W6ph5Mm5Pz8GgiULbPgzG37mj9g=
+
+# Regular User 2
+dn: uid=user2,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: user2
+cn: User Two
+sn: Two
+givenName: User
+mail: user2@example.com
+userPassword: {SHA}W6ph5Mm5Pz8GgiULbPgzG37mj9g=
+
+# Manager User
+dn: uid=manager1,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: manager1
+cn: Manager One
+sn: Manager
+givenName: Manager
+mail: manager1@example.com
+userPassword: {SHA}W6ph5Mm5Pz8GgiULbPgzG37mj9g=
+
+# Groups
+dn: ou=ADMIN,ou=groups,dc=example,dc=com
+objectClass: top
+objectClass: groupOfNames
+ou: ADMIN
+description: Administrator group
+member: uid=admin,ou=users,dc=example,dc=com
+
+dn: ou=DEVELOPERS,ou=groups,dc=example,dc=com
+objectClass: top
+objectClass: groupOfNames
+ou: DEVELOPERS
+description: Development team
+member: uid=user1,ou=users,dc=example,dc=com
+member: uid=manager1,ou=users,dc=example,dc=com
+
+dn: ou=TESTERS,ou=groups,dc=example,dc=com
+objectClass: top
+objectClass: groupOfNames
+ou: TESTERS
+description: Testing team
+member: uid=user2,ou=users,dc=example,dc=com
+
+dn: ou=MANAGERS,ou=groups,dc=example,dc=com
+objectClass: top
+objectClass: groupOfNames
+ou: MANAGERS
+description: Management group
+member: uid=manager1,ou=users,dc=example,dc=com
+
+
+
