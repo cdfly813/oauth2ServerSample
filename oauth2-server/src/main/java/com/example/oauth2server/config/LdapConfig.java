@@ -38,7 +38,7 @@ public class LdapConfig {
         // Configure the embedded LDAP server
         InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig(ldapBase);
         config.addAdditionalBindCredentials(ldapUsername, ldapPassword);
-        config.setListenerConfigs(new InMemoryListenerConfig("default", null, 1389, null, null, null));
+        config.setListenerConfigs(new InMemoryListenerConfig("default", null, 5389, null, null, null));
 
         // Create the LDAP server
         ldapServer = new InMemoryDirectoryServer(config);

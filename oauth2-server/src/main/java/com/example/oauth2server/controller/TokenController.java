@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/oauth2")
 @CrossOrigin(origins = "*")
 @Tag(name = "OAuth2 Token Management", description = "JWT token operations including access tokens, refresh tokens, and token introspection")
 public class TokenController {
@@ -50,7 +49,7 @@ public class TokenController {
     @Autowired(required = false)
     private OAuth2TokenGenerator<?> tokenGenerator;
 
-    @PostMapping("/token")
+    @PostMapping("/oauth2/token")
     @Operation(summary = "Get access token", description = "Exchange authorization code, refresh token, or client credentials for an access token")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Token issued successfully",
@@ -99,7 +98,7 @@ public class TokenController {
         }
     }
 
-    @PostMapping("/token/refresh")
+    @PostMapping("/oauth2/token/refresh")
     @Operation(summary = "Refresh access token", description = "Exchange a refresh token for a new access token")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "New tokens issued successfully",
@@ -118,7 +117,7 @@ public class TokenController {
         return getToken(tokenRequest, authorizationHeader, null);
     }
 
-    @PostMapping("/introspect")
+    @PostMapping("/oauth2/introspect")
     @Operation(summary = "Introspect token", description = "Check if a token is valid and get its metadata")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Token introspection successful",
@@ -144,50 +143,13 @@ public class TokenController {
         }
     }
 
-    @GetMapping("/authorize")
-    @Operation(summary = "OAuth2 Authorization Endpoint", description = "Initiate OAuth2 authorization code flow. This endpoint redirects to login page if not authenticated, then redirects back with authorization code.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "302", description = "Redirect to login page or back to client with authorization code"),
-        @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
-        @ApiResponse(responseCode = "401", description = "Client authentication failed")
-    })
-    public ResponseEntity<String> authorizeEndpoint(
-            @Parameter(description = "OAuth2 response type (e.g., code, token, id_token)", example = "code")
-            @RequestParam String response_type,
 
-            @Parameter(description = "Client ID registered with the authorization server", example = "client1")
-            @RequestParam String client_id,
 
-            @Parameter(description = "Redirect URI where the authorization code will be sent", example = "http://localhost:3000/callback")
-            @RequestParam String redirect_uri,
 
-            @Parameter(description = "Requested OAuth2 scopes (space-separated)", example = "read write")
-            @RequestParam(required = false) String scope,
 
-            @Parameter(description = "State parameter for CSRF protection", example = "xyz123")
-            @RequestParam(required = false) String state,
 
-            @Parameter(description = "OIDC nonce parameter", example = "abc123")
-            @RequestParam(required = false) String nonce) {
 
-        // This is just for documentation - the actual OAuth2 authorization flow
-        // is handled by Spring Security OAuth2 Authorization Server
-        return ResponseEntity.ok()
-            .header("Content-Type", "text/html")
-            .body("<html><body><h2>OAuth2 Authorization Documentation</h2>" +
-                  "<p>This endpoint initiates the OAuth2 authorization code flow:</p>" +
-                  "<ul>" +
-                  "<li><strong>response_type:</strong> " + response_type + "</li>" +
-                  "<li><strong>client_id:</strong> " + client_id + "</li>" +
-                  "<li><strong>redirect_uri:</strong> " + redirect_uri + "</li>" +
-                  "<li><strong>scope:</strong> " + (scope != null ? scope : "read") + "</li>" +
-                  "<li><strong>state:</strong> " + (state != null ? state : "not provided") + "</li>" +
-                  "</ul>" +
-                  "<p>In a real OAuth2 flow, this would redirect to the login page or return an authorization code.</p>" +
-                  "</body></html>");
-    }
-
-    @GetMapping("/.well-known/openid_configuration")
+    @GetMapping("/.well-known/oauth-authorization-server")
     @Operation(summary = "OpenID Connect configuration", description = "Get OpenID Connect provider configuration")
     @ApiResponse(responseCode = "200", description = "OIDC configuration returned successfully")
     public ResponseEntity<Map<String, Object>> getOpenIdConfiguration() {

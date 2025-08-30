@@ -13,11 +13,16 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.ldap.authentication.BindAuthenticator;
 import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
+import org.springframework.security.oauth2.server.authorization.token.*;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -41,7 +46,9 @@ import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -54,7 +61,10 @@ public class AuthorizationServerConfig {
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize -> authorize
+            .requestMatchers("/").permitAll()
             .requestMatchers("/login").permitAll()
+            .requestMatchers("/oauth2/**").permitAll()
+            .requestMatchers("/.well-known/**").permitAll()
             .requestMatchers("/swagger-ui/**").permitAll()
             .requestMatchers("/swagger-ui.html").permitAll()
             .requestMatchers("/api-docs/**").permitAll()
@@ -62,20 +72,23 @@ public class AuthorizationServerConfig {
             .anyRequest().authenticated()
         );
 
-        http.formLogin(form -> form
-            .loginPage("/login")
-            .defaultSuccessUrl("/swagger-ui.html", true)
-            .permitAll()
+        // Configure exception handling to redirect to login page
+        http.exceptionHandling(exceptions -> exceptions
+            .authenticationEntryPoint(new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login"))
         );
 
-        http.authenticationManager(authenticationManager());
+        // Configure the success handler with a default URL
+        SavedRequestAwareAuthenticationSuccessHandler successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
+        successHandler.setDefaultTargetUrl("/");
+        successHandler.setAlwaysUseDefaultTargetUrl(false); // Only use default if no saved request
+        successHandler.setTargetUrlParameter("continue");  // Handle 'continue' param for OAuth flows
 
+        http.formLogin(form -> form
+                .loginPage("/login")
+                .successHandler(successHandler)
+                .permitAll()
+        );
         return http.build();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager() throws Exception {
-        return new org.springframework.security.authentication.ProviderManager(ldapAuthenticationProvider());
     }
 
     @Bean
@@ -98,25 +111,69 @@ public class AuthorizationServerConfig {
         return provider;
     }
 
-            @Bean
+    @Bean
     @Order(1)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         // Apply default OAuth2 authorization server security
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
-        // Get the OAuth2 authorization server configurer and configure OIDC
+        // Configure OIDC support
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
             .oidc(Customizer.withDefaults());
+
+        // Configure authorization endpoint
+        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+            .authorizationEndpoint(authorizationEndpoint ->
+                authorizationEndpoint
+                    .consentPage("/oauth2/consent")
+            );
+
+
+        // In oauth2AuthorizationServerConfigurer (add this if not present)
+        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+                .tokenGenerator(tokenGenerator(jwkSource(), jwtTokenCustomizer()));  // Use customizer
+
+        // Configure exception handling for OAuth2 endpoints
+        http.exceptionHandling(exceptions -> exceptions
+            .defaultAuthenticationEntryPointFor(
+                new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login"),
+                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/oauth2/authorize")
+            )
+        );
 
         return http.build();
     }
 
     @Bean
+    public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer() {
+        return (context) -> {
+            if (context.getTokenType().equals(OAuth2TokenType.ACCESS_TOKEN)) {
+                Authentication principal = context.getPrincipal();
+                List<String> groups = principal.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .map(auth -> auth.replace("ROLE_", "").toLowerCase())  // e.g., "ROLE_ADMIN" -> "admin"
+                        .collect(Collectors.toList());
+                context.getClaims().claim("groups", groups);
+            }
+        };
+    }
+
+
+    // New helper bean for token generator
+    @Bean
+    public OAuth2TokenGenerator<?> tokenGenerator(JWKSource<SecurityContext> jwkSource, OAuth2TokenCustomizer<JwtEncodingContext> customizer) {
+        JwtGenerator jwtGenerator = new JwtGenerator(new NimbusJwtEncoder(jwkSource));
+        jwtGenerator.setJwtCustomizer(customizer);
+        return new DelegatingOAuth2TokenGenerator(jwtGenerator);  // Add other generators if needed
+    }
+
+
+    @Bean
     public RegisteredClientRepository registeredClientRepository() {
         // H2M Client - Human-to-Machine (Authorization Code Flow)
-        RegisteredClient h2mClient = RegisteredClient.withId(UUID.randomUUID().toString())
+        RegisteredClient h2mClient = RegisteredClient.withId("client1")
             .clientId("client1")
-            .clientSecret("{noop}secret1")
+            .clientSecret(passwordEncoder().encode("secret1"))
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
@@ -127,7 +184,7 @@ public class AuthorizationServerConfig {
             .scope("write")
             .scope("user")
             .clientSettings(ClientSettings.builder()
-                .requireAuthorizationConsent(true)
+                .requireAuthorizationConsent(false)
                 .build())
             .tokenSettings(TokenSettings.builder()
                 .accessTokenTimeToLive(Duration.ofHours(1))
@@ -136,9 +193,9 @@ public class AuthorizationServerConfig {
             .build();
 
         // M2M Client - Machine-to-Machine (Client Credentials Flow)
-        RegisteredClient m2mClient = RegisteredClient.withId(UUID.randomUUID().toString())
+        RegisteredClient m2mClient = RegisteredClient.withId("client2")
             .clientId("client2")
-            .clientSecret("{noop}secret2")
+            .clientSecret(passwordEncoder().encode("secret2"))
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
             .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
             .scope("read")

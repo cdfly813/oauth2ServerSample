@@ -1,0 +1,147 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 2rem;
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+  text-align: left;
+}
+
+.login-card h2 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-weight: 300;
+  text-align: center;
+}
+
+.login-card p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.login-section {
+  background: #f8f9fa;
+  border-radius: 15px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 2px solid #e9ecef;
+}
+
+.login-section h3 {
+  color: #495057;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.oauth2-login-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.oauth2-login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.oauth2-login-btn:active {
+  transform: translateY(0);
+}
+
+.info-section {
+  background: #e7f3ff;
+  border-radius: 15px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-left: 5px solid #007bff;
+}
+
+.info-section h4 {
+  color: #007bff;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.info-section ol {
+  color: #495057;
+  padding-left: 1.5rem;
+}
+
+.info-section li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.test-credentials {
+  background: #fff3cd;
+  border-radius: 15px;
+  padding: 2rem;
+  border-left: 5px solid #ffc107;
+}
+
+.test-credentials h4 {
+  color: #856404;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.test-credentials ul {
+  color: #856404;
+  list-style: none;
+  padding: 0;
+}
+
+.test-credentials li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #ffeaa7;
+}
+
+.test-credentials li:last-child {
+  border-bottom: none;
+}
+
+.test-credentials strong {
+  color: #533f00;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    padding: 1rem;
+    min-height: 70vh;
+  }
+
+  .login-card {
+    padding: 1.5rem;
+    margin: 0;
+  }
+
+  .login-section,
+  .info-section,
+  .test-credentials {
+    padding: 1.5rem;
+  }
+
+  .oauth2-login-btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+}

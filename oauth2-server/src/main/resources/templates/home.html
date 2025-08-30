@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth2 Server - Home</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .home-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #2ecc71;
+            margin-bottom: 20px;
+        }
+
+        .home-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .home-message {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .oauth2-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px;
+        }
+
+        .oauth2-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .login-link {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px;
+        }
+
+        .login-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .timestamp {
+            color: #95a5a6;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="home-container">
+        <div class="success-icon">✅</div>
+        <h1 class="home-title">Welcome to OAuth2 Server</h1>
+
+        <p class="home-message">
+            You have successfully logged in! This is the default landing page for direct login access.
+            For OAuth2 authorization flows, you'll be redirected back to your application's callback URL.
+        </p>
+
+        <div>
+            <a href="/oauth2/authorize?response_type=code&client_id=client1&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&scope=read+write&state=oauth_test" class="oauth2-link">
+                Start OAuth2 Flow
+            </a>
+
+            <a href="/login" class="login-link">
+                Go to Login Page
+            </a>
+        </div>
+
+        <p class="timestamp">
+            Server time: <span th:text="${#dates.format(new java.util.Date(), 'yyyy-MM-dd HH:mm:ss')}">2025-08-30 00:57:37</span>
+        </p>
+    </div>
+</body>
+</html>

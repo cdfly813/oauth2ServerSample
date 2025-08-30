@@ -6,7 +6,7 @@ spring:
     name: oauth2-server
   
   ldap:
-    urls: ldap://localhost:1389
+    urls: ldap://localhost:5389
     base: dc=example,dc=com
     username: cn=admin,dc=example,dc=com
     password: admin
@@ -20,7 +20,7 @@ spring:
           client1:
             registration:
               client-id: client1
-              client-secret: "{noop}secret1"
+              client-secret: "secret1"
               client-authentication-methods:
                 - "client_secret_basic"
               authorization-grant-types:
@@ -66,11 +66,30 @@ springdoc:
     disable-swagger-default-url: true
   packages-to-scan: com.example.oauth2server.controller
 
-# Logging
+# Enhanced Logging Configuration for Debugging
 logging:
   level:
+    # Core Spring Framework - DEBUG for troubleshooting
+    org.springframework.web: DEBUG
     org.springframework.security: DEBUG
+    org.springframework.security.web: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.web.servlet: DEBUG
+
+    # Application specific
     com.example.oauth2server: DEBUG
+
+    # LDAP specific - useful for connection issues
+    org.springframework.security.ldap: DEBUG
+    org.springframework.ldap: DEBUG
+
+  # Enhanced console pattern with thread info
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+  # Log file for persistent debugging
+  file:
+    name: logs/oauth2-server.log
 
 
 
